@@ -35,7 +35,8 @@ class TestAsyncVelixarClient:
         mock_request.assert_called_once_with(
             "POST", 
             "/memory",
-            json={"content": "test content", "tier": 2}
+            json={"content": "test content", "tier": 2},
+            params=None
         )
 
     @pytest.mark.asyncio
@@ -59,6 +60,7 @@ class TestAsyncVelixarClient:
         mock_request.assert_called_once_with(
             "GET",
             "/memory/search",
+            json=None,
             params={"q": "test query", "limit": 10}
         )
 
@@ -78,7 +80,12 @@ class TestAsyncVelixarClient:
         assert isinstance(result, Memory)
         assert result.id == "mem-1"
         
-        mock_request.assert_called_once_with("GET", "/memory/mem-1")
+        mock_request.assert_called_once_with(
+            "GET", 
+            "/memory/mem-1",
+            json=None,
+            params=None
+        )
 
     @pytest.mark.asyncio
     @patch('httpx.AsyncClient.request')
@@ -92,7 +99,12 @@ class TestAsyncVelixarClient:
         result = await self.client.delete("mem-1")
         
         assert result is True
-        mock_request.assert_called_once_with("DELETE", "/memory/mem-1")
+        mock_request.assert_called_once_with(
+            "DELETE", 
+            "/memory/mem-1",
+            json=None,
+            params=None
+        )
 
     @pytest.mark.asyncio
     @patch('httpx.AsyncClient.request')

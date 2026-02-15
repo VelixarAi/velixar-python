@@ -42,7 +42,7 @@ dev = [
 [project.urls]
 Homepage = "https://velixarai.com"
 Documentation = "https://docs.velixarai.com"
-Repository = "https://github.com/velixar/velixar-python"
+Repository = "https://github.com/VelixarAi/velixar-python"
 
 [tool.hatch.build.targets.wheel]
 packages = ["velixar"]

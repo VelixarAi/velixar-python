@@ -33,7 +33,7 @@ class TestVelixar:
         assert result == "mem-123"
         request = httpx_mock.get_request()
         assert request.method == "POST"
-        assert request.url.path == "/memory"
+        assert request.url.path == "/v1/memory"
         assert "test content" in request.content.decode()
 
     def test_search(self, client, httpx_mock):
@@ -60,7 +60,7 @@ class TestVelixar:
         assert isinstance(result, Memory)
         assert result.id == "mem-123"
         request = httpx_mock.get_request()
-        assert request.url.path == "/memory/mem-123"
+        assert request.url.path == "/v1/memory/mem-123"
 
     def test_delete(self, client, httpx_mock):
         httpx_mock.add_response(json={"deleted": True})
@@ -70,7 +70,7 @@ class TestVelixar:
         assert result is True
         request = httpx_mock.get_request()
         assert request.method == "DELETE"
-        assert request.url.path == "/memory/mem-123"
+        assert request.url.path == "/v1/memory/mem-123"
 
     def test_error_handling(self, client, httpx_mock):
         httpx_mock.add_response(status_code=500)
