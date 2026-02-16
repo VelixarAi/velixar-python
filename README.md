@@ -1,10 +1,12 @@
 # Velixar Python SDK
 
-Persistent memory infrastructure for AI applications.
-
 [![PyPI](https://img.shields.io/pypi/v/velixar)](https://pypi.org/project/velixar/)
 [![Python](https://img.shields.io/pypi/pyversions/velixar)](https://pypi.org/project/velixar/)
-[![License](https://img.shields.io/github/license/velixar/velixar-python)](LICENSE)
+[![License](https://img.shields.io/github/license/VelixarAi/velixar-python)](LICENSE)
+
+Persistent memory for AI assistants and agents. Give any LLM-powered application long-term recall across sessions.
+
+Velixar is an open memory layer — it works with any AI assistant, agent framework, or LLM pipeline. Store facts, preferences, and context that persist beyond a single conversation.
 
 ## Installation
 
@@ -26,18 +28,17 @@ pip install velixar[all]
 ```python
 from velixar import Velixar
 
-# Initialize client
 v = Velixar(api_key="vlx_your_key")  # Or set VELIXAR_API_KEY env var
 
 # Store a memory
 memory_id = v.store(
     content="User prefers dark mode and metric units",
-    tier=0,  # 0=pinned (critical), 2=semantic (default)
+    tier=0,  # 0=pinned, 1=session, 2=semantic (default), 3=org
     user_id="user_123",
-    tags=["preferences", "settings"],
+    tags=["preferences"],
 )
 
-# Search memories
+# Search memories semantically
 results = v.search("user preferences", limit=5)
 for memory in results.memories:
     print(f"[{memory.score:.2f}] {memory.content}")
@@ -68,11 +69,29 @@ async with AsyncVelixar(api_key="vlx_...") as v:
 ```python
 from velixar import MemoryTier
 
-# Store critical preference
 v.store("User is allergic to peanuts", tier=MemoryTier.PINNED)
-
-# Store session context
 v.store("Currently discussing project X", tier=MemoryTier.SESSION)
+```
+
+## Use With Any AI Assistant
+
+Velixar is assistant-agnostic. Plug it into OpenAI, Anthropic, LangChain, LlamaIndex, custom agents, or any LLM pipeline:
+
+```python
+# Inject memories as context before calling your LLM
+results = v.search(user_message, limit=5)
+context = "\n".join(m.content for m in results.memories)
+
+response = openai.chat.completions.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": f"Relevant memories:\n{context}"},
+        {"role": "user", "content": user_message},
+    ],
+)
+
+# Store important facts after the conversation
+v.store("User prefers concise answers", user_id="user_123")
 ```
 
 ## LangChain Integration
@@ -82,20 +101,11 @@ from langchain.chains import ConversationChain
 from langchain_openai import ChatOpenAI
 from velixar.integrations.langchain import VelixarMemory
 
-# Create memory backed by Velixar
-memory = VelixarMemory(
-    api_key="vlx_...",
-    user_id="user_123",
-)
+memory = VelixarMemory(api_key="vlx_...", user_id="user_123")
 
-# Use with any LangChain chain
-chain = ConversationChain(
-    llm=ChatOpenAI(),
-    memory=memory,
-)
-
-response = chain.invoke({"input": "Remember that I prefer Python over JavaScript"})
-response = chain.invoke({"input": "What programming language do I prefer?"})
+chain = ConversationChain(llm=ChatOpenAI(), memory=memory)
+chain.invoke({"input": "Remember that I prefer Python over JavaScript"})
+chain.invoke({"input": "What programming language do I prefer?"})
 ```
 
 ## LlamaIndex Integration
@@ -106,51 +116,25 @@ from llama_index.llms.openai import OpenAI
 from velixar.integrations.llamaindex import VelixarMemory
 
 memory = VelixarMemory(api_key="vlx_...", user_id="user_123")
-
-agent = ReActAgent.from_tools(
-    tools=[...],
-    llm=OpenAI(),
-    memory=memory,
-)
-```
-
-## OpenAI Function Calling
-
-```python
-from openai import OpenAI
-from velixar import Velixar
-from velixar.integrations.openai import VelixarAssistant
-
-# Simple wrapper with automatic memory
-assistant = VelixarAssistant(
-    openai_client=OpenAI(),
-    velixar_api_key="vlx_...",
-    user_id="user_123",
-)
-
-assistant.chat("Remember that my birthday is March 15th")
-assistant.chat("When is my birthday?")  # Uses memory automatically
+agent = ReActAgent.from_tools(tools=[...], llm=OpenAI(), memory=memory)
 ```
 
 ## Batch Operations
 
 ```python
-# Store multiple memories at once
 result = v.store_many([
     {"content": "Fact 1", "tier": 0},
     {"content": "Fact 2", "tier": 2, "tags": ["important"]},
     {"content": "Fact 3", "user_id": "user_456"},
 ])
-print(f"Stored {result.stored} memories")
 ```
 
 ## Error Handling
 
 ```python
-from velixar import Velixar, VelixarError, RateLimitError, AuthenticationError
+from velixar import VelixarError, RateLimitError, AuthenticationError
 
 try:
-    v = Velixar(api_key="invalid")
     v.store("test")
 except AuthenticationError:
     print("Invalid API key")
@@ -171,13 +155,15 @@ v = Velixar(
 )
 ```
 
-## Environment Variables
+## Get an API Key
 
-| Variable | Description |
-|----------|-------------|
-| `VELIXAR_API_KEY` | Your API key |
-| `VELIXAR_BASE_URL` | Custom API endpoint |
+Sign up at [velixarai.com](https://velixarai.com) and generate a key under Settings → API Keys.
+
+## Related
+
+- [velixar (JavaScript SDK)](https://github.com/VelixarAi/velixar-js) — TypeScript/JavaScript client
+- [velixar-mcp-server](https://github.com/VelixarAi/velixar-mcp-server) — MCP server for any MCP-compatible AI assistant
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT
