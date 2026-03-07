@@ -97,15 +97,30 @@ v.store("User prefers concise answers", user_id="user_123")
 ## LangChain Integration
 
 ```python
-from langchain.chains import ConversationChain
 from langchain_openai import ChatOpenAI
-from velixar.integrations.langchain import VelixarMemory
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from velixar.integrations.langchain import VelixarChatMessageHistory
 
-memory = VelixarMemory(api_key="vlx_...", user_id="user_123")
+def get_session_history(session_id: str):
+    return VelixarChatMessageHistory(session_id=session_id, api_key="vlx_...")
 
-chain = ConversationChain(llm=ChatOpenAI(), memory=memory)
-chain.invoke({"input": "Remember that I prefer Python over JavaScript"})
-chain.invoke({"input": "What programming language do I prefer?"})
+chain = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful assistant."),
+    MessagesPlaceholder(variable_name="history"),
+    ("human", "{input}"),
+]) | ChatOpenAI()
+
+with_history = RunnableWithMessageHistory(
+    chain, get_session_history,
+    input_messages_key="input",
+    history_messages_key="history",
+)
+
+# Memory persists across sessions, restarts, and deployments
+config = {"configurable": {"session_id": "user_123"}}
+with_history.invoke({"input": "I prefer Python over JavaScript"}, config=config)
+with_history.invoke({"input": "What language do I prefer?"}, config=config)
 ```
 
 ## LlamaIndex Integration

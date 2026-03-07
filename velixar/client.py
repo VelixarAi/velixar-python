@@ -20,7 +20,7 @@ from velixar.exceptions import (
 )
 
 
-DEFAULT_BASE_URL = "https://api.velixarai.com/v1"
+DEFAULT_BASE_URL = "https://api.velixarai.com"
 DEFAULT_TIMEOUT = 30.0
 DEFAULT_MAX_RETRIES = 3
 
@@ -48,7 +48,7 @@ class BaseClient:
         return {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
-            "User-Agent": "velixar-python/0.1.0",
+            "User-Agent": "velixar-python/0.2.0",
         }
 
     def _handle_error(self, response: httpx.Response) -> None:
@@ -197,6 +197,43 @@ class Velixar(BaseClient):
         result = self._request("GET", f"/memory/{memory_id}")
         return Memory(**result.get("memory", result))
 
+    def update(
+        self,
+        memory_id: str,
+        *,
+        content: str | None = None,
+        tags: list[str] | None = None,
+    ) -> bool:
+        """Update a memory's content or tags. Returns True if updated."""
+        data: dict[str, Any] = {}
+        if content is not None:
+            data["content"] = content
+        if tags is not None:
+            data["tags"] = tags
+        result = self._request("PATCH", f"/memory/{memory_id}", json=data)
+        return result.get("updated", False)
+
+    def list(
+        self,
+        *,
+        limit: int = 10,
+        cursor: str | None = None,
+        user_id: str | None = None,
+    ) -> SearchResult:
+        """List memories with pagination."""
+        params: dict[str, Any] = {"limit": limit}
+        if cursor:
+            params["cursor"] = cursor
+        if user_id:
+            params["user_id"] = user_id
+        result = self._request("GET", "/memory/list", params=params)
+        return SearchResult(
+            memories=[Memory(**m) for m in result.get("memories", [])],
+            count=result.get("count", 0),
+            query="",
+            cursor=result.get("cursor"),
+        )
+
     def delete(self, memory_id: str) -> bool:
         """Delete a memory. Returns True if deleted."""
         result = self._request("DELETE", f"/memory/{memory_id}")
@@ -329,6 +366,43 @@ class AsyncVelixar(BaseClient):
     async def get(self, memory_id: str) -> Memory:
         result = await self._request("GET", f"/memory/{memory_id}")
         return Memory(**result.get("memory", result))
+
+    async def update(
+        self,
+        memory_id: str,
+        *,
+        content: str | None = None,
+        tags: list[str] | None = None,
+    ) -> bool:
+        """Update a memory's content or tags. Returns True if updated."""
+        data: dict[str, Any] = {}
+        if content is not None:
+            data["content"] = content
+        if tags is not None:
+            data["tags"] = tags
+        result = await self._request("PATCH", f"/memory/{memory_id}", json=data)
+        return result.get("updated", False)
+
+    async def list(
+        self,
+        *,
+        limit: int = 10,
+        cursor: str | None = None,
+        user_id: str | None = None,
+    ) -> SearchResult:
+        """List memories with pagination."""
+        params: dict[str, Any] = {"limit": limit}
+        if cursor:
+            params["cursor"] = cursor
+        if user_id:
+            params["user_id"] = user_id
+        result = await self._request("GET", "/memory/list", params=params)
+        return SearchResult(
+            memories=[Memory(**m) for m in result.get("memories", [])],
+            count=result.get("count", 0),
+            query="",
+            cursor=result.get("cursor"),
+        )
 
     async def delete(self, memory_id: str) -> bool:
         result = await self._request("DELETE", f"/memory/{memory_id}")

@@ -1,1 +1,1 @@
-"""Velixar integrations."""
+"""Velixar integrations for popular AI frameworks."""

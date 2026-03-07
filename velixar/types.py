@@ -34,6 +34,7 @@ class SearchResult(BaseModel):
     memories: list[Memory]
     count: int
     query: str
+    cursor: Optional[str] = None  # Pagination cursor for list()
 
 
 class StoreRequest(BaseModel):
