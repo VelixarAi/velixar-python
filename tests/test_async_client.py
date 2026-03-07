@@ -1,11 +1,10 @@
 """Tests for Velixar async client."""
 
 import pytest
-import httpx
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import Mock, patch
 
-from velixar import AsyncVelixar, VelixarError, AuthenticationError
-from velixar.types import Memory, SearchResult, MemoryTier
+from velixar import AsyncVelixar, AuthenticationError
+from velixar.types import Memory, SearchResult
 
 
 class TestAsyncVelixarClient:

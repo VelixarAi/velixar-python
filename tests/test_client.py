@@ -1,5 +1,4 @@
 import pytest
-import httpx
 from unittest.mock import patch
 from velixar import Velixar
 from velixar.exceptions import AuthenticationError, VelixarError
