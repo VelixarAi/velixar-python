@@ -13,7 +13,7 @@ except ImportError:
         "Install it with: pip install velixar[llamaindex]"
     )
 
-from pydantic import Field, PrivateAttr
+from pydantic import PrivateAttr
 
 from velixar import Velixar, MemoryTier
 

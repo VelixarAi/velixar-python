@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 try:
     from langchain_core.chat_history import BaseChatMessageHistory
-    from langchain_core.messages import AIMessage, HumanMessage, BaseMessage, messages_from_dict
+    from langchain_core.messages import AIMessage, HumanMessage, BaseMessage
 except ImportError:
     raise ImportError("Install langchain: pip install velixar[langchain]")
 

@@ -5,14 +5,13 @@ from __future__ import annotations
 import os
 import time
 import asyncio
-from typing import Any, Optional, Sequence
-from contextlib import contextmanager, asynccontextmanager
+from typing import Any, Sequence
 
 import httpx
 
 from velixar.types import (
     Memory, MemoryTier, SearchResult,
-    StoreRequest, StoreResponse, BatchStoreResponse,
+    StoreRequest, BatchStoreResponse,
 )
 from velixar.exceptions import (
     VelixarError, AuthenticationError, RateLimitError,

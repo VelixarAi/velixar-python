@@ -1,12 +1,10 @@
 """FastAPI middleware for automatic memory context."""
 
-from fastapi import FastAPI, Request, Depends
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from typing import Optional
-import json
 
-from velixar import Velixar, AsyncVelixar
+from velixar import AsyncVelixar
 
 app = FastAPI()
 
@@ -97,7 +95,7 @@ async def chat(
         context = "\n".join(m.content for m in results.memories)
     
     # Build prompt with context
-    prompt = f"""Context from memory:
+    _prompt = f"""Context from memory:
 {context}
 
 User message: {body.message}
