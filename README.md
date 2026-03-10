@@ -64,7 +64,7 @@ async with AsyncVelixar(api_key="vlx_...") as v:
 | 0 | Pinned | Critical facts, user preferences, never expire |
 | 1 | Session | Current conversation context |
 | 2 | Semantic | Long-term memories (default) |
-| 3 | Organization | Shared team knowledge |
+| 3 | Organization | Shared team knowledge (Hivemind+) |
 
 ```python
 from velixar import MemoryTier
@@ -72,6 +72,19 @@ from velixar import MemoryTier
 v.store("User is allergic to peanuts", tier=MemoryTier.PINNED)
 v.store("Currently discussing project X", tier=MemoryTier.SESSION)
 ```
+
+## Cognitive Features by Plan
+
+| Feature | Free | Cortex ($49) | Synapse ($149) | Hivemind ($49/seat) |
+|---------|------|-------------|----------------|---------------------|
+| Store & search | ✓ | ✓ | ✓ | ✓ |
+| Neural ensembles | — | ✓ | ✓ | ✓ |
+| Temporal chains | — | ✓ | ✓ | ✓ |
+| Consolidation | — | ✓ | ✓ | ✓ |
+| Identity modeling | — | — | ✓ | ✓ |
+| Org memory (tier 3) | — | — | — | ✓ |
+
+Free tier stores and searches memories. Paid tiers activate cognitive features automatically — no code changes needed. [Pricing →](https://velixarai.com/pricing)
 
 ## Use With Any AI Assistant
 
