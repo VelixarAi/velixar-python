@@ -1,6 +1,6 @@
-"""Velixar Python SDK - Persistent memory for AI applications."""
+"""Velixar Python SDK v1.0.0 — Persistent cognitive memory for AI applications."""
 
-from velixar.client import Velixar, AsyncVelixar
+from velixar.client import Velixar, AsyncVelixar, GraphEntity, GraphRelation, TraverseResult
 from velixar.types import Memory, SearchResult, MemoryTier
 from velixar.exceptions import (
     VelixarError,
@@ -10,13 +10,16 @@ from velixar.exceptions import (
     ValidationError,
 )
 
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 __all__ = [
     "Velixar",
     "AsyncVelixar",
     "Memory",
     "SearchResult",
     "MemoryTier",
+    "GraphEntity",
+    "GraphRelation",
+    "TraverseResult",
     "VelixarError",
     "AuthenticationError",
     "RateLimitError",
