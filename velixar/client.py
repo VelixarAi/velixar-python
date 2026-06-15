@@ -114,6 +114,8 @@ class Velixar(BaseClient):
         self.close()
 
     def _request(self, method: str, path: str, json: dict[str, Any] | None = None, params: dict[str, Any] | None = None) -> dict[str, Any]:
+        if not path.startswith("/v1/"):
+            path = "/v1" + path  # live API is /v1-prefixed; server router normalizes identically
         last_error: Exception | None = None
         for attempt in range(self.max_retries):
             try:
@@ -243,6 +245,8 @@ class AsyncVelixar(BaseClient):
         await self.close()
 
     async def _request(self, method: str, path: str, json: dict[str, Any] | None = None, params: dict[str, Any] | None = None) -> dict[str, Any]:
+        if not path.startswith("/v1/"):
+            path = "/v1" + path  # live API is /v1-prefixed; server router normalizes identically
         last_error: Exception | None = None
         for attempt in range(self.max_retries):
             try:
