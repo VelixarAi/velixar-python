@@ -10,7 +10,12 @@ from velixar.exceptions import (
     ValidationError,
 )
 
-__version__ = "1.0.0"
+from importlib.metadata import PackageNotFoundError, version as _pkg_version
+
+try:  # derived, never hand-typed — a literal here drifted to 1.0.0 in a 1.0.1 wheel
+    __version__ = _pkg_version("velixar")
+except PackageNotFoundError:  # running from a source tree, not installed
+    __version__ = "0.0.0.dev0"
 __all__ = [
     "Velixar",
     "AsyncVelixar",
