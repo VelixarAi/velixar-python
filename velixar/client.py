@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import time
 import asyncio
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
 from dataclasses import dataclass, field
 
 import httpx
@@ -27,7 +27,7 @@ class GraphEntity:
     entity_type: str
     label: str
     properties: dict[str, Any] = field(default_factory=dict)
-    relevance: float | None = None
+    relevance: Optional[float] = None
 
 
 @dataclass
@@ -35,7 +35,7 @@ class GraphRelation:
     source: str
     target: str
     relation_type: str
-    weight: float | None = None
+    weight: Optional[float] = None
 
 
 @dataclass
@@ -47,9 +47,9 @@ class TraverseResult:
 class BaseClient:
     def __init__(
         self,
-        api_key: str | None = None,
-        base_url: str | None = None,
-        workspace_id: str | None = None,
+        api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
+        workspace_id: Optional[str] = None,
         timeout: float = DEFAULT_TIMEOUT,
         max_retries: int = DEFAULT_MAX_RETRIES,
     ):
@@ -94,7 +94,7 @@ class Velixar(BaseClient):
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self._client: httpx.Client | None = None
+        self._client: Optional[httpx.Client] = None
 
     @property
     def client(self) -> httpx.Client:
@@ -113,10 +113,10 @@ class Velixar(BaseClient):
     def __exit__(self, *args: Any) -> None:
         self.close()
 
-    def _request(self, method: str, path: str, json: dict[str, Any] | None = None, params: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _request(self, method: str, path: str, json: Optional[dict[str, Any]] = None, params: Optional[dict[str, Any]] = None) -> dict[str, Any]:
         if not path.startswith("/v1/"):
             path = "/v1" + path  # live API is /v1-prefixed; server router normalizes identically
-        last_error: Exception | None = None
+        last_error: Optional[Exception] = None
         for attempt in range(self.max_retries):
             try:
                 response = self.client.request(method, path, json=json, params=params)
@@ -138,7 +138,7 @@ class Velixar(BaseClient):
 
     # ── Memory CRUD ──
 
-    def store(self, content: str, *, user_id: str | None = None, tier: MemoryTier | int = MemoryTier.SEMANTIC, tags: list[str] | None = None) -> str:
+    def store(self, content: str, *, user_id: Optional[str] = None, tier: MemoryTier | int = MemoryTier.SEMANTIC, tags: Optional[list[str]] = None) -> str:
         data: dict[str, Any] = {"content": content, "tier": int(tier)}
         if user_id: data["user_id"] = user_id
         if tags: data["tags"] = tags
@@ -148,7 +148,7 @@ class Velixar(BaseClient):
         items = [m.model_dump() if isinstance(m, StoreRequest) else m for m in memories]
         return BatchStoreResponse(**self._request("POST", "/memory/batch", json={"memories": items}))
 
-    def search(self, query: str, *, limit: int = 10, user_id: str | None = None) -> SearchResult:
+    def search(self, query: str, *, limit: int = 10, user_id: Optional[str] = None) -> SearchResult:
         params: dict[str, Any] = {"q": query, "limit": limit}
         if user_id: params["user_id"] = user_id
         result = self._request("GET", "/memory/search", params=params)
@@ -158,13 +158,13 @@ class Velixar(BaseClient):
         result = self._request("GET", f"/memory/{memory_id}")
         return Memory(**result.get("memory", result))
 
-    def update(self, memory_id: str, *, content: str | None = None, tags: list[str] | None = None) -> bool:
+    def update(self, memory_id: str, *, content: Optional[str] = None, tags: Optional[list[str]] = None) -> bool:
         data: dict[str, Any] = {}
         if content is not None: data["content"] = content
         if tags is not None: data["tags"] = tags
         return self._request("PATCH", f"/memory/{memory_id}", json=data).get("updated", False)
 
-    def list(self, *, limit: int = 10, cursor: str | None = None, user_id: str | None = None) -> SearchResult:
+    def list(self, *, limit: int = 10, cursor: Optional[str] = None, user_id: Optional[str] = None) -> SearchResult:
         params: dict[str, Any] = {"limit": limit}
         if cursor: params["cursor"] = cursor
         if user_id: params["user_id"] = user_id
@@ -183,7 +183,7 @@ class Velixar(BaseClient):
             edges=[GraphRelation(**e) for e in result.get("edges", [])],
         )
 
-    def graph_search(self, query: str, *, entity_type: str | None = None, limit: int = 20) -> list[GraphEntity]:
+    def graph_search(self, query: str, *, entity_type: Optional[str] = None, limit: int = 20) -> list[GraphEntity]:
         result = self._request("POST", "/graph/search", json={"query": query, "entity_type": entity_type, "limit": limit})
         return [GraphEntity(**e) for e in result.get("entities", result.get("results", []))]
 
@@ -193,7 +193,7 @@ class Velixar(BaseClient):
 
     # ── Identity ──
 
-    def get_identity(self, *, user_id: str | None = None) -> dict[str, Any]:
+    def get_identity(self, *, user_id: Optional[str] = None) -> dict[str, Any]:
         params: dict[str, Any] = {}
         if user_id: params["user_id"] = user_id
         return self._request("GET", "/memory/identity", params=params)
@@ -208,7 +208,7 @@ class Velixar(BaseClient):
 
     # ── CI/CD Webhook ──
 
-    def webhook(self, event_type: str, content: str, *, tags: list[str] | None = None, **metadata: Any) -> dict[str, Any]:
+    def webhook(self, event_type: str, content: str, *, tags: Optional[list[str]] = None, **metadata: Any) -> dict[str, Any]:
         body: dict[str, Any] = {"event_type": event_type, "content": content}
         if tags: body["tags"] = tags
         body.update(metadata)
@@ -225,7 +225,7 @@ class AsyncVelixar(BaseClient):
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self._client: httpx.AsyncClient | None = None
+        self._client: Optional[httpx.AsyncClient] = None
 
     @property
     def client(self) -> httpx.AsyncClient:
@@ -244,10 +244,10 @@ class AsyncVelixar(BaseClient):
     async def __aexit__(self, *args: Any) -> None:
         await self.close()
 
-    async def _request(self, method: str, path: str, json: dict[str, Any] | None = None, params: dict[str, Any] | None = None) -> dict[str, Any]:
+    async def _request(self, method: str, path: str, json: Optional[dict[str, Any]] = None, params: Optional[dict[str, Any]] = None) -> dict[str, Any]:
         if not path.startswith("/v1/"):
             path = "/v1" + path  # live API is /v1-prefixed; server router normalizes identically
-        last_error: Exception | None = None
+        last_error: Optional[Exception] = None
         for attempt in range(self.max_retries):
             try:
                 response = await self.client.request(method, path, json=json, params=params)
@@ -269,13 +269,13 @@ class AsyncVelixar(BaseClient):
 
     # ── Memory CRUD ──
 
-    async def store(self, content: str, *, user_id: str | None = None, tier: MemoryTier | int = MemoryTier.SEMANTIC, tags: list[str] | None = None) -> str:
+    async def store(self, content: str, *, user_id: Optional[str] = None, tier: MemoryTier | int = MemoryTier.SEMANTIC, tags: Optional[list[str]] = None) -> str:
         data: dict[str, Any] = {"content": content, "tier": int(tier)}
         if user_id: data["user_id"] = user_id
         if tags: data["tags"] = tags
         return (await self._request("POST", "/memory", json=data))["id"]
 
-    async def search(self, query: str, *, limit: int = 10, user_id: str | None = None) -> SearchResult:
+    async def search(self, query: str, *, limit: int = 10, user_id: Optional[str] = None) -> SearchResult:
         params: dict[str, Any] = {"q": query, "limit": limit}
         if user_id: params["user_id"] = user_id
         result = await self._request("GET", "/memory/search", params=params)
@@ -285,13 +285,13 @@ class AsyncVelixar(BaseClient):
         result = await self._request("GET", f"/memory/{memory_id}")
         return Memory(**result.get("memory", result))
 
-    async def update(self, memory_id: str, *, content: str | None = None, tags: list[str] | None = None) -> bool:
+    async def update(self, memory_id: str, *, content: Optional[str] = None, tags: Optional[list[str]] = None) -> bool:
         data: dict[str, Any] = {}
         if content is not None: data["content"] = content
         if tags is not None: data["tags"] = tags
         return (await self._request("PATCH", f"/memory/{memory_id}", json=data)).get("updated", False)
 
-    async def list(self, *, limit: int = 10, cursor: str | None = None, user_id: str | None = None) -> SearchResult:
+    async def list(self, *, limit: int = 10, cursor: Optional[str] = None, user_id: Optional[str] = None) -> SearchResult:
         params: dict[str, Any] = {"limit": limit}
         if cursor: params["cursor"] = cursor
         if user_id: params["user_id"] = user_id
@@ -310,7 +310,7 @@ class AsyncVelixar(BaseClient):
             edges=[GraphRelation(**e) for e in result.get("edges", [])],
         )
 
-    async def graph_search(self, query: str, *, entity_type: str | None = None, limit: int = 20) -> list[GraphEntity]:
+    async def graph_search(self, query: str, *, entity_type: Optional[str] = None, limit: int = 20) -> list[GraphEntity]:
         result = await self._request("POST", "/graph/search", json={"query": query, "entity_type": entity_type, "limit": limit})
         return [GraphEntity(**e) for e in result.get("entities", result.get("results", []))]
 
@@ -320,7 +320,7 @@ class AsyncVelixar(BaseClient):
 
     # ── Identity ──
 
-    async def get_identity(self, *, user_id: str | None = None) -> dict[str, Any]:
+    async def get_identity(self, *, user_id: Optional[str] = None) -> dict[str, Any]:
         params: dict[str, Any] = {}
         if user_id: params["user_id"] = user_id
         return await self._request("GET", "/memory/identity", params=params)
@@ -335,7 +335,7 @@ class AsyncVelixar(BaseClient):
 
     # ── CI/CD Webhook ──
 
-    async def webhook(self, event_type: str, content: str, *, tags: list[str] | None = None, **metadata: Any) -> dict[str, Any]:
+    async def webhook(self, event_type: str, content: str, *, tags: Optional[list[str]] = None, **metadata: Any) -> dict[str, Any]:
         body: dict[str, Any] = {"event_type": event_type, "content": content}
         if tags: body["tags"] = tags
         body.update(metadata)

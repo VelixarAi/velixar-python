@@ -1,9 +1,10 @@
 """Custom exceptions for Velixar SDK."""
+from typing import Optional
 
 
 class VelixarError(Exception):
     """Base exception for Velixar SDK."""
-    def __init__(self, message: str, status_code: int | None = None):
+    def __init__(self, message: str, status_code: Optional[int] = None):
         self.message = message
         self.status_code = status_code
         super().__init__(message)
@@ -17,7 +18,7 @@ class AuthenticationError(VelixarError):
 
 class RateLimitError(VelixarError):
     """Rate limit exceeded."""
-    def __init__(self, message: str = "Rate limit exceeded", retry_after: int | None = None):
+    def __init__(self, message: str = "Rate limit exceeded", retry_after: Optional[int] = None):
         super().__init__(message, status_code=429)
         self.retry_after = retry_after
 

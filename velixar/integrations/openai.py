@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 from velixar import Velixar, MemoryTier
 
 
-def get_velixar_tools(client: Velixar, user_id: str | None = None) -> list[dict[str, Any]]:
+def get_velixar_tools(client: Velixar, user_id: Optional[str] = None) -> list[dict[str, Any]]:
     """Get OpenAI function definitions for Velixar memory operations.
     
     Usage:
@@ -73,7 +73,7 @@ def get_velixar_tools(client: Velixar, user_id: str | None = None) -> list[dict[
 def handle_velixar_call(
     client: Velixar,
     tool_call: Any,
-    user_id: str | None = None,
+    user_id: Optional[str] = None,
 ) -> str:
     """Handle a Velixar tool call from OpenAI.
     
@@ -125,10 +125,10 @@ class VelixarAssistant:
     def __init__(
         self,
         openai_client: Any,
-        velixar_api_key: str | None = None,
+        velixar_api_key: Optional[str] = None,
         model: str = "gpt-4",
-        user_id: str | None = None,
-        system_prompt: str | None = None,
+        user_id: Optional[str] = None,
+        system_prompt: Optional[str] = None,
     ):
         self.openai = openai_client
         self.velixar = Velixar(api_key=velixar_api_key)
