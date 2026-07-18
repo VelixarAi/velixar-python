@@ -10,6 +10,9 @@ Velixar is an open memory layer — it works with any AI assistant, agent framew
 
 ## Installation
 
+**Requires Python 3.9+** (tested on 3.9–3.13; import-verified on 3.9 and 3.10 — versions
+below 3.9 are refused at install time by the package metadata, not discovered at import).
+
 ```bash
 pip install velixar
 
